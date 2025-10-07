@@ -6,7 +6,7 @@ Eine minimalistische Single-Page Web-App zum Üben von IT-Consulting Cases.
 
 - Import von Case-Dateien im JSON-Format
 - Strikte Validierung gegen Schema
-- Text-to-Speech mit Web Speech API (Deutsch)
+- Text-to-Speech über Azure Speech SDK (Play/Stop Toggle)
 - Timer-Funktion für Bearbeitungszeit
 - Klärende Fragen (max. 2 aus 4 wählbar)
 - Strukturierte Lösungsdarstellung
