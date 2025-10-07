@@ -6,7 +6,16 @@ const APP_CONFIG = {
         currentCaseId: 'currentCaseId'
     },
     tts: {
-        defaultLanguage: 'de-DE',
+        azure: {
+            subscriptionKey: typeof AZURE_CREDENTIALS !== 'undefined' ? AZURE_CREDENTIALS.subscriptionKey : 'DEIN_AZURE_KEY',
+            region: typeof AZURE_CREDENTIALS !== 'undefined' ? AZURE_CREDENTIALS.region : 'DEINE_AZURE_REGION',
+            defaultLanguage: 'de-DE',
+            defaultVoiceName: 'de-DE-ConradNeural',
+            voiceByLanguage: {
+                'de-DE': 'de-DE-ConradNeural',
+                'en-US': 'en-US-GuyNeural'
+            }
+        },
         defaultRate: 1.0,
         defaultPitch: 1.0,
         defaultVolume: 1.0

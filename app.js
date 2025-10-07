@@ -25,8 +25,6 @@ class CaseTrainerApp {
             errorList: document.getElementById('errorList'),
             
             caseTitle: document.getElementById('caseTitle'),
-            caseClient: document.getElementById('caseClient'),
-            caseDifficulty: document.getElementById('caseDifficulty'),
             caseScenario: document.getElementById('caseScenario'),
             caseInstructions: document.getElementById('caseInstructions'),
             
@@ -158,13 +156,8 @@ class CaseTrainerApp {
         localStorage.setItem(APP_CONFIG.storageKeys.currentCaseId, caseObj.id);
         
         this.elements.caseTitle.textContent = caseObj.title;
-        this.elements.caseClient.textContent = caseObj.client;
         this.elements.caseScenario.textContent = caseObj.scenario;
         this.elements.caseInstructions.textContent = caseObj.instructions;
-        
-        const difficultyClass = caseObj.difficulty.toLowerCase();
-        this.elements.caseDifficulty.textContent = caseObj.difficulty;
-        this.elements.caseDifficulty.className = `difficulty-badge ${difficultyClass}`;
         
         this.elements.caseSelector.value = caseObj.id;
         
@@ -189,18 +182,21 @@ class CaseTrainerApp {
         this.elements.timerDisplay.textContent = '00:00';
     }
 
-    toggleTTS() {
+toggleTTS() {
         if (tts.isSpeaking()) {
             tts.cancel();
-            this.elements.ttsBtnText.textContent = 'Vorlesen';
         } else {
-            const text = this.currentCase.scenario;
+            const text = `${this.currentCase.scenario} ${this.currentCase.instructions}`;
+            const lang = this.currentCase.tts.languageCode;
+            
             this.elements.ttsBtnText.textContent = 'Stopp';
-            tts.speak(text, { languageCode: this.currentCase.tts.languageCode }).catch(err => {
-                console.error('TTS error:', err);
-                this.showErrors([{ path: '', message: 'Text-to-Speech nicht verfügbar. Bitte überprüfen Sie Ihre Browsereinstellungen.' }]);
-                this.elements.ttsBtnText.textContent = 'Vorlesen';
-            });
+            
+            tts.speak(text, { languageCode: lang })
+                .catch(err => {
+                    console.error('Azure TTS error:', err);
+                    this.showErrors([{ path: '', message: 'Azure Text-to-Speech ist fehlgeschlagen. Überprüfen Sie Ihren API-Schlüssel und die Region.' }]);
+                    this.elements.ttsBtnText.textContent = 'Vorlesen';
+                });
         }
     }
 
@@ -211,6 +207,9 @@ class CaseTrainerApp {
             this.showClarifyingQuestions();
             this.elements.clarifyingBtn.textContent = 'Bearbeitung starten';
         } else if (this.elements.clarifyingBtn.textContent === 'Bearbeitung starten') {
+            this.handleStartSolving();
+        } else if (this.elements.clarifyingBtn.textContent === 'Weiter zur Lösung') {
+            // Nach falscher Frage: Timer starten und dann zur Lösung
             this.startTimer();
             this.elements.clarifyingBtn.textContent = 'Lösung anzeigen';
         } else if (this.elements.clarifyingBtn.textContent === 'Lösung anzeigen') {
@@ -218,9 +217,138 @@ class CaseTrainerApp {
         }
     }
 
+    handleStartSolving() {
+        if (!this.currentCase) {
+            return;
+        }
+
+        const clarifying = this.currentCase.clarifying;
+        const maxQuestions = clarifying.maxQuestions;
+        const hintElement = this.elements.clarifyingSection.querySelector('.clarifying-hint');
+        const selectedIndices = Array.from(this.selectedQuestions);
+
+        this.resetClarifyingFeedback();
+
+        if (selectedIndices.length === 0) {
+            hintElement.textContent = `Bitte wählen Sie mindestens eine Frage aus (max. ${maxQuestions}).`;
+            return;
+        }
+
+        this.setClarifyingInputsDisabled(true);
+
+        const incorrectIndices = selectedIndices.filter(index => !clarifying.questions[index].isCorrect);
+
+        if (incorrectIndices.length > 0) {
+            incorrectIndices.forEach(index => this.markClarifyingQuestionIncorrect(index));
+            this.revealCorrectQuestions();
+            hintElement.textContent = 'Mindestens eine Ihrer ausgewählten Fragen war nicht hilfreich.';
+            this.elements.clarifyingBtn.textContent = 'Weiter zur Lösung';
+            return;
+        }
+
+        hintElement.textContent = 'Super – starten Sie jetzt mit der Bearbeitung.';
+        this.startTimer();
+        this.elements.clarifyingBtn.textContent = 'Lösung anzeigen';
+    }
+
+    setClarifyingInputsDisabled(disabled) {
+        if (!this.currentCase) {
+            return;
+        }
+
+        this.currentCase.clarifying.questions.forEach((_, index) => {
+            const checkbox = document.getElementById(`question-${index}`);
+            if (checkbox) {
+                checkbox.disabled = disabled;
+            }
+        });
+    }
+
+    resetClarifyingFeedback() {
+        if (!this.currentCase) {
+            return;
+        }
+
+        this.currentCase.clarifying.questions.forEach((_, index) => {
+            const checkbox = document.getElementById(`question-${index}`);
+            if (!checkbox) {
+                return;
+            }
+
+            const item = checkbox.closest('.question-item');
+            if (item) {
+                item.classList.remove('incorrect', 'revealed-correct');
+            }
+
+            const answer = document.getElementById(`answer-${index}`);
+            if (answer) {
+                answer.style.display = checkbox.checked ? 'block' : 'none';
+            }
+        });
+    }
+
+    markClarifyingQuestionIncorrect(index) {
+        const checkbox = document.getElementById(`question-${index}`);
+        if (!checkbox) {
+            return;
+        }
+
+        const item = checkbox.closest('.question-item');
+        if (item) {
+            item.classList.add('incorrect');
+            item.classList.remove('selected');
+        }
+
+        const answer = document.getElementById(`answer-${index}`);
+        if (answer) {
+            answer.style.display = 'block';
+        }
+    }
+
+    revealCorrectQuestions() {
+        if (!this.currentCase) {
+            return;
+        }
+
+        this.currentCase.clarifying.questions.forEach((question, index) => {
+            if (!question.isCorrect) {
+                return;
+            }
+
+            const checkbox = document.getElementById(`question-${index}`);
+            if (!checkbox) {
+                return;
+            }
+
+            checkbox.checked = true;
+            this.selectedQuestions.add(index);
+
+            const item = checkbox.closest('.question-item');
+            if (item) {
+                item.classList.add('revealed-correct');
+                item.classList.remove('incorrect');
+            }
+
+            const answer = document.getElementById(`answer-${index}`);
+            if (answer) {
+                answer.style.display = 'block';
+            }
+        });
+    }
+
     showClarifyingQuestions() {
         this.elements.clarifyingSection.style.display = 'block';
         this.elements.questionsList.innerHTML = '';
+        this.selectedQuestions.clear();
+        
+        const maxQuestions = this.currentCase.clarifying.maxQuestions;
+        const hintText = parseInt(maxQuestions, 10) === 1 
+            ? 'Wählen Sie eine Frage aus:' 
+            : `Wählen Sie bis zu ${maxQuestions} Fragen aus:`;
+        
+        const hintElement = this.elements.clarifyingSection.querySelector('.clarifying-hint');
+        this.currentClarifyingHint = hintText;
+        hintElement.textContent = hintText;
         
         this.currentCase.clarifying.questions.forEach((q, index) => {
             const div = document.createElement('div');
@@ -230,7 +358,8 @@ class CaseTrainerApp {
             label.className = 'question-checkbox';
             
             const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
+            checkbox.type = maxQuestions === 1 ? 'radio' : 'checkbox';
+            checkbox.name = 'clarifying-questions';
             checkbox.id = `question-${index}`;
             checkbox.addEventListener('change', () => this.handleQuestionSelect(index, checkbox.checked));
             
@@ -251,15 +380,35 @@ class CaseTrainerApp {
             
             this.elements.questionsList.appendChild(div);
         });
+
+        this.setClarifyingInputsDisabled(false);
     }
 
     handleQuestionSelect(index, checked) {
+        const maxQuestions = this.currentCase.clarifying.maxQuestions;
         const checkbox = document.getElementById(`question-${index}`);
         const answer = document.getElementById(`answer-${index}`);
         const item = checkbox.closest('.question-item');
+        const hintElement = this.elements.clarifyingSection.querySelector('.clarifying-hint');
+        if (hintElement && this.currentClarifyingHint) {
+            hintElement.textContent = this.currentClarifyingHint;
+        }
         
         if (checked) {
-            if (this.selectedQuestions.size >= 2) {
+            // Wenn maxQuestions = 1, wird automatisch nur eine Frage ausgewählt (Radio-Buttons)
+            if (maxQuestions === 1) {
+                // Bei Radio-Buttons wird automatisch nur eine Frage ausgewählt
+                this.selectedQuestions.clear();
+                // Alle anderen Antworten ausblenden
+                this.currentCase.clarifying.questions.forEach((q, i) => {
+                    if (i !== index) {
+                        const otherAnswer = document.getElementById(`answer-${i}`);
+                        const otherItem = document.getElementById(`question-${i}`).closest('.question-item');
+                        otherAnswer.style.display = 'none';
+                        otherItem.classList.remove('selected');
+                    }
+                });
+            } else if (this.selectedQuestions.size >= maxQuestions) {
                 const firstSelected = Array.from(this.selectedQuestions)[0];
                 document.getElementById(`question-${firstSelected}`).checked = false;
                 document.getElementById(`answer-${firstSelected}`).style.display = 'none';
@@ -351,7 +500,3 @@ class CaseTrainerApp {
         this.elements.errorContainer.style.display = 'none';
     }
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-    new CaseTrainerApp();
-});

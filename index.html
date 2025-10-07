@@ -31,12 +31,6 @@
             <div id="caseView" class="case-view" style="display: none;">
                 <div class="case-header">
                     <h2 id="caseTitle" class="case-title"></h2>
-                    <div class="case-meta">
-                        <span class="client-badge">
-                            <strong>Klient:</strong> <span id="caseClient"></span>
-                        </span>
-                        <span class="difficulty-badge" id="caseDifficulty"></span>
-                    </div>
                 </div>
 
                 <div class="scenario-section">
@@ -56,7 +50,7 @@
 
                 <div id="clarifyingSection" class="clarifying-section" style="display: none;">
                     <h3>Klärende Fragen</h3>
-                    <p class="clarifying-hint">Wählen Sie bis zu 2 Fragen aus:</p>
+                    <p class="clarifying-hint"></p>
                     <div id="questionsList" class="questions-list"></div>
                 </div>
 
@@ -91,9 +85,17 @@
         </main>
     </div>
 
-    <script src="config.js"></script>
-    <script src="utils.js"></script>
-    <script src="tts.js"></script>
-    <script src="app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/microsoft-cognitiveservices-speech-sdk@latest/distrib/browser/microsoft.cognitiveservices.speech.sdk.bundle.js"></script>
+    <script src="env.js" defer></script>
+    <script src="config.js" defer></script>
+    <script src="utils.js" defer></script>
+    <script src="tts.js" defer></script>
+    <script src="app.js" defer></script>
+    <script>
+        window.onload = () => {
+            initializeTTS();
+            new CaseTrainerApp();
+        };
+    </script>
 </body>
 </html>

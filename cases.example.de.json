@@ -1,37 +1,37 @@
 {
-  "version": "1.0",
-  "generatedAt": "2024-01-15T10:00:00Z",
   "cases": [
     {
       "id": "cloud-migration-retail",
       "title": "Cloud-Migration für Einzelhandelskette",
-      "client": "ModeTrend GmbH",
       "language": "de",
-      "tags": ["Cloud", "Migration", "Retail", "AWS", "Kosten"],
       "scenario": "Die ModeTrend GmbH, eine mittelständische Einzelhandelskette mit 50 Filialen in Deutschland, möchte ihre komplette IT-Infrastruktur in die Cloud migrieren. Aktuell betreibt das Unternehmen ein eigenes Rechenzentrum mit veralteter Hardware. Die Geschäftsführung erhofft sich Kosteneinsparungen und bessere Skalierbarkeit. Das IT-Budget beträgt 2 Millionen Euro jährlich, wovon 60% für den Betrieb des Rechenzentrums aufgewendet werden.",
       "instructions": "Entwickeln Sie eine Cloud-Migrationsstrategie für ModeTrend.",
       "clarifying": {
-        "maxQuestions": 2,
+        "maxQuestions": 1,
         "questions": [
           {
             "id": "q1",
             "question": "Welche kritischen Systeme betreibt ModeTrend aktuell?",
-            "answer": "ERP-System (SAP), E-Commerce-Plattform, POS-System in Filialen, Data Warehouse für Business Intelligence"
+            "answer": "ERP-System (SAP), E-Commerce-Plattform, POS-System in Filialen, Data Warehouse für Business Intelligence",
+            "isCorrect": true
           },
           {
             "id": "q2",
             "question": "Gibt es regulatorische Anforderungen oder Compliance-Vorgaben?",
-            "answer": "DSGVO-Compliance erforderlich, Kundendaten müssen in der EU bleiben, PCI-DSS für Zahlungsverarbeitung"
+            "answer": "DSGVO-Compliance erforderlich, Kundendaten müssen in der EU bleiben, PCI-DSS für Zahlungsverarbeitung",
+            "isCorrect": false
           },
           {
             "id": "q3",
             "question": "Wie ist die aktuelle IT-Mannschaft aufgestellt?",
-            "answer": "15 IT-Mitarbeiter, davon 3 mit Cloud-Erfahrung, Rest hauptsächlich Infrastruktur- und Support-Spezialisten"
+            "answer": "15 IT-Mitarbeiter, davon 3 mit Cloud-Erfahrung, Rest hauptsächlich Infrastruktur- und Support-Spezialisten",
+            "isCorrect": false
           },
           {
             "id": "q4",
             "question": "Welcher Zeitrahmen ist für die Migration vorgesehen?",
-            "answer": "18 Monate für die komplette Migration, Quick Wins innerhalb der ersten 6 Monate erwünscht"
+            "answer": "18 Monate für die komplette Migration, Quick Wins innerhalb der ersten 6 Monate erwünscht",
+            "isCorrect": false
           }
         ]
       },
@@ -78,12 +78,7 @@
           "Vernachlässigung der Datenmigration-Komplexität",
           "Unzureichende Kostenüberwachung führt zu Budget-Überschreitung"
         ]
-      },
-      "tts": {
-        "languageCode": "de-DE"
-      },
-      "difficulty": "Medium",
-      "estimatedSolveMinutes": 25
+      }
     }
   ]
 }
