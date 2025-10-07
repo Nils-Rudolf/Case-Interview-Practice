@@ -1,35 +1,26 @@
-# Case-Interview-Practice
+# Interview Case Structuring Practice
 
-Eine minimalistische Single-Page Web-App zum Üben von IT-Consulting Cases.
+Web-App zum Üben der Strukturierung von Consulting Interview Cases mit eigenen Cases und Text-to-Speech-Funktion
 
 ## Features
 
 - Import von Case-Dateien im JSON-Format
-- Strikte Validierung gegen Schema
-- Text-to-Speech über Azure Speech SDK (Play/Stop Toggle)
+- Text-to-Speech über Azure Speech SDK
 - Timer-Funktion für Bearbeitungszeit
-- Klärende Fragen (max. 2 aus 4 wählbar)
+- Klärende Fragen
 - Strukturierte Lösungsdarstellung
-- Lokale Speicherung der Cases
 
 ## Installation
 
 1. `index.html` in einem Browser öffnen
-2. Beispiel-Case aus `cases.example.de.json` importieren
-3. Azure-Anmeldedaten werden in `env.js` hinterlegt.
-
-## Verwendung
-
-### Case importieren
-1. Klick auf "Importieren"
-2. JSON-Datei auswählen
-3. Bei Validierungsfehlern werden diese angezeigt
+2. Klick auf "Importieren" und beispiel-Case aus `cases.example.de.json` importieren
+3. Azure-Anmeldedaten werden in `env.js` hinterlegt
 
 ## Schema-Anforderungen
 
 Cases müssen dem definierten JSON-Schema entsprechen:
-- Genau 4 klärende Fragen
-- Maximal 2 Fragen auswählbar
+- 2-4 klärende Fragen
+- 1-2 Fragen auswählbar wovon immer so viele korrekt sind wie max. wählbare Fragen. Die anderen Fragen sind falsch.
 - Sprache: Deutsch (`de`) oder Englisch (`en`)
 - Hierarchischer Lösungsbaum (3-6 Hauptpunkte)
 
