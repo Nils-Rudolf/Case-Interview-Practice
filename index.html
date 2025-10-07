@@ -37,10 +37,6 @@
                     <h3>Szenario</h3>
                     <p id="caseScenario" class="scenario-text"></p>
                     <p id="caseInstructions" class="instructions-text"></p>
-                    <button id="ttsBtn" class="btn btn-secondary">
-                        <span class="tts-icon">🔊</span>
-                        <span id="ttsBtnText">Vorlesen</span>
-                    </button>
                 </div>
 
                 <div class="action-buttons">
@@ -85,15 +81,12 @@
         </main>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/microsoft-cognitiveservices-speech-sdk@latest/distrib/browser/microsoft.cognitiveservices.speech.sdk.bundle.js"></script>
     <script src="env.js" defer></script>
     <script src="config.js" defer></script>
     <script src="utils.js" defer></script>
-    <script src="tts.js" defer></script>
     <script src="app.js" defer></script>
     <script>
         window.onload = () => {
-            initializeTTS();
             new CaseTrainerApp();
         };
     </script>

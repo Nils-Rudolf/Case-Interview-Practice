@@ -8,6 +8,7 @@ class CaseTrainerApp {
         this.timerSeconds = 0;
         this.timerInterval = null;
         this.isPaused = false;
+        this.currentClarifyingHint = '';
         
         this.initElements();
         this.initEventListeners();
@@ -28,8 +29,6 @@ class CaseTrainerApp {
             caseScenario: document.getElementById('caseScenario'),
             caseInstructions: document.getElementById('caseInstructions'),
             
-            ttsBtn: document.getElementById('ttsBtn'),
-            ttsBtnText: document.getElementById('ttsBtnText'),
             clarifyingBtn: document.getElementById('clarifyingBtn'),
             skipBtn: document.getElementById('skipBtn'),
             
@@ -66,10 +65,6 @@ class CaseTrainerApp {
             }
         });
 
-        this.elements.ttsBtn.addEventListener('click', () => {
-            this.toggleTTS();
-        });
-
         this.elements.clarifyingBtn.addEventListener('click', () => {
             this.handleClarifyingButton();
         });
@@ -80,10 +75,6 @@ class CaseTrainerApp {
 
         this.elements.pauseBtn.addEventListener('click', () => {
             this.toggleTimer();
-        });
-
-        tts.onEnd(() => {
-            this.elements.ttsBtnText.textContent = 'Vorlesen';
         });
     }
 
@@ -170,9 +161,7 @@ class CaseTrainerApp {
         this.stopTimer();
         this.timerSeconds = 0;
         this.isPaused = false;
-        
-        tts.cancel();
-        this.elements.ttsBtnText.textContent = 'Vorlesen';
+        this.currentClarifyingHint = '';
         
         this.elements.clarifyingSection.style.display = 'none';
         this.elements.timerSection.style.display = 'none';
@@ -180,24 +169,6 @@ class CaseTrainerApp {
         this.elements.clarifyingBtn.textContent = 'Klärende Fragen';
         this.elements.pauseBtn.textContent = 'Pause';
         this.elements.timerDisplay.textContent = '00:00';
-    }
-
-toggleTTS() {
-        if (tts.isSpeaking()) {
-            tts.cancel();
-        } else {
-            const text = `${this.currentCase.scenario} ${this.currentCase.instructions}`;
-            const lang = this.currentCase.tts.languageCode;
-            
-            this.elements.ttsBtnText.textContent = 'Stopp';
-            
-            tts.speak(text, { languageCode: lang })
-                .catch(err => {
-                    console.error('Azure TTS error:', err);
-                    this.showErrors([{ path: '', message: 'Azure Text-to-Speech ist fehlgeschlagen. Überprüfen Sie Ihren API-Schlüssel und die Region.' }]);
-                    this.elements.ttsBtnText.textContent = 'Vorlesen';
-                });
-        }
     }
 
     handleClarifyingButton() {
@@ -208,7 +179,7 @@ toggleTTS() {
             this.elements.clarifyingBtn.textContent = 'Bearbeitung starten';
         } else if (this.elements.clarifyingBtn.textContent === 'Bearbeitung starten') {
             this.handleStartSolving();
-        } else if (this.elements.clarifyingBtn.textContent === 'Weiter zur Lösung') {
+        } else if (this.elements.clarifyingBtn.textContent === 'Strukturieren starten') {
             // Nach falscher Frage: Timer starten und dann zur Lösung
             this.startTimer();
             this.elements.clarifyingBtn.textContent = 'Lösung anzeigen';
@@ -223,14 +194,16 @@ toggleTTS() {
         }
 
         const clarifying = this.currentCase.clarifying;
-        const maxQuestions = clarifying.maxQuestions;
+        const maxQuestions = this.getClarifyingMaxQuestions();
         const hintElement = this.elements.clarifyingSection.querySelector('.clarifying-hint');
         const selectedIndices = Array.from(this.selectedQuestions);
 
         this.resetClarifyingFeedback();
 
         if (selectedIndices.length === 0) {
-            hintElement.textContent = `Bitte wählen Sie mindestens eine Frage aus (max. ${maxQuestions}).`;
+            hintElement.textContent = maxQuestions === 1
+                ? 'Bitte wählen Sie eine Frage aus.'
+                : `Bitte wählen Sie mindestens eine Frage aus (max. ${maxQuestions}).`;
             return;
         }
 
@@ -242,7 +215,7 @@ toggleTTS() {
             incorrectIndices.forEach(index => this.markClarifyingQuestionIncorrect(index));
             this.revealCorrectQuestions();
             hintElement.textContent = 'Mindestens eine Ihrer ausgewählten Fragen war nicht hilfreich.';
-            this.elements.clarifyingBtn.textContent = 'Weiter zur Lösung';
+            this.elements.clarifyingBtn.textContent = 'Strukturieren starten';
             return;
         }
 
@@ -278,6 +251,17 @@ toggleTTS() {
             const item = checkbox.closest('.question-item');
             if (item) {
                 item.classList.remove('incorrect', 'revealed-correct');
+                const label = item.querySelector('.question-label');
+                if (label) {
+                    label.style.removeProperty('color');
+                    label.style.removeProperty('text-decoration');
+                    label.style.removeProperty('font-weight');
+                }
+                if (checkbox.checked) {
+                    item.classList.add('selected');
+                } else {
+                    item.classList.remove('selected');
+                }
             }
 
             const answer = document.getElementById(`answer-${index}`);
@@ -298,6 +282,8 @@ toggleTTS() {
             item.classList.add('incorrect');
             item.classList.remove('selected');
         }
+
+        this.selectedQuestions.delete(index);
 
         const answer = document.getElementById(`answer-${index}`);
         if (answer) {
@@ -327,6 +313,7 @@ toggleTTS() {
             if (item) {
                 item.classList.add('revealed-correct');
                 item.classList.remove('incorrect');
+                item.classList.remove('selected');
             }
 
             const answer = document.getElementById(`answer-${index}`);
@@ -341,9 +328,9 @@ toggleTTS() {
         this.elements.questionsList.innerHTML = '';
         this.selectedQuestions.clear();
         
-        const maxQuestions = this.currentCase.clarifying.maxQuestions;
-        const hintText = parseInt(maxQuestions, 10) === 1 
-            ? 'Wählen Sie eine Frage aus:' 
+        const maxQuestions = this.getClarifyingMaxQuestions();
+        const hintText = maxQuestions === 1 
+            ? 'Wählen Sie 1 Frage aus:' 
             : `Wählen Sie bis zu ${maxQuestions} Fragen aus:`;
         
         const hintElement = this.elements.clarifyingSection.querySelector('.clarifying-hint');
@@ -385,10 +372,17 @@ toggleTTS() {
     }
 
     handleQuestionSelect(index, checked) {
-        const maxQuestions = this.currentCase.clarifying.maxQuestions;
+        const maxQuestions = this.getClarifyingMaxQuestions();
         const checkbox = document.getElementById(`question-${index}`);
         const answer = document.getElementById(`answer-${index}`);
+        if (!checkbox || !answer) {
+            return;
+        }
+
         const item = checkbox.closest('.question-item');
+        if (!item) {
+            return;
+        }
         const hintElement = this.elements.clarifyingSection.querySelector('.clarifying-hint');
         if (hintElement && this.currentClarifyingHint) {
             hintElement.textContent = this.currentClarifyingHint;
@@ -402,17 +396,31 @@ toggleTTS() {
                 // Alle anderen Antworten ausblenden
                 this.currentCase.clarifying.questions.forEach((q, i) => {
                     if (i !== index) {
+                        const otherCheckbox = document.getElementById(`question-${i}`);
                         const otherAnswer = document.getElementById(`answer-${i}`);
-                        const otherItem = document.getElementById(`question-${i}`).closest('.question-item');
-                        otherAnswer.style.display = 'none';
-                        otherItem.classList.remove('selected');
+                        const otherItem = otherCheckbox ? otherCheckbox.closest('.question-item') : null;
+                        if (otherAnswer) {
+                            otherAnswer.style.display = 'none';
+                        }
+                        if (otherItem) {
+                            otherItem.classList.remove('selected');
+                        }
                     }
                 });
             } else if (this.selectedQuestions.size >= maxQuestions) {
                 const firstSelected = Array.from(this.selectedQuestions)[0];
-                document.getElementById(`question-${firstSelected}`).checked = false;
-                document.getElementById(`answer-${firstSelected}`).style.display = 'none';
-                document.getElementById(`question-${firstSelected}`).closest('.question-item').classList.remove('selected');
+                const firstCheckbox = document.getElementById(`question-${firstSelected}`);
+                const firstAnswer = document.getElementById(`answer-${firstSelected}`);
+                const firstItem = firstCheckbox ? firstCheckbox.closest('.question-item') : null;
+                if (firstCheckbox) {
+                    firstCheckbox.checked = false;
+                }
+                if (firstAnswer) {
+                    firstAnswer.style.display = 'none';
+                }
+                if (firstItem) {
+                    firstItem.classList.remove('selected');
+                }
                 this.selectedQuestions.delete(firstSelected);
             }
             this.selectedQuestions.add(index);
@@ -423,6 +431,15 @@ toggleTTS() {
             answer.style.display = 'none';
             item.classList.remove('selected');
         }
+    }
+
+    getClarifyingMaxQuestions() {
+        if (!this.currentCase || !this.currentCase.clarifying) {
+            return 0;
+        }
+
+        const value = Number(this.currentCase.clarifying.maxQuestions);
+        return Number.isNaN(value) ? 0 : value;
     }
 
     startTimer() {
