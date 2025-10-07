@@ -1,0 +1,89 @@
+{
+  "version": "1.0",
+  "generatedAt": "2024-01-15T10:00:00Z",
+  "cases": [
+    {
+      "id": "cloud-migration-retail",
+      "title": "Cloud-Migration für Einzelhandelskette",
+      "client": "ModeTrend GmbH",
+      "language": "de",
+      "tags": ["Cloud", "Migration", "Retail", "AWS", "Kosten"],
+      "scenario": "Die ModeTrend GmbH, eine mittelständische Einzelhandelskette mit 50 Filialen in Deutschland, möchte ihre komplette IT-Infrastruktur in die Cloud migrieren. Aktuell betreibt das Unternehmen ein eigenes Rechenzentrum mit veralteter Hardware. Die Geschäftsführung erhofft sich Kosteneinsparungen und bessere Skalierbarkeit. Das IT-Budget beträgt 2 Millionen Euro jährlich, wovon 60% für den Betrieb des Rechenzentrums aufgewendet werden.",
+      "instructions": "Entwickeln Sie eine Cloud-Migrationsstrategie für ModeTrend.",
+      "clarifying": {
+        "maxQuestions": 2,
+        "questions": [
+          {
+            "id": "q1",
+            "question": "Welche kritischen Systeme betreibt ModeTrend aktuell?",
+            "answer": "ERP-System (SAP), E-Commerce-Plattform, POS-System in Filialen, Data Warehouse für Business Intelligence"
+          },
+          {
+            "id": "q2",
+            "question": "Gibt es regulatorische Anforderungen oder Compliance-Vorgaben?",
+            "answer": "DSGVO-Compliance erforderlich, Kundendaten müssen in der EU bleiben, PCI-DSS für Zahlungsverarbeitung"
+          },
+          {
+            "id": "q3",
+            "question": "Wie ist die aktuelle IT-Mannschaft aufgestellt?",
+            "answer": "15 IT-Mitarbeiter, davon 3 mit Cloud-Erfahrung, Rest hauptsächlich Infrastruktur- und Support-Spezialisten"
+          },
+          {
+            "id": "q4",
+            "question": "Welcher Zeitrahmen ist für die Migration vorgesehen?",
+            "answer": "18 Monate für die komplette Migration, Quick Wins innerhalb der ersten 6 Monate erwünscht"
+          }
+        ]
+      },
+      "solution": {
+        "tree": [
+          {
+            "label": "Lift & Shift Phase (Monate 1-6)",
+            "children": [
+              { "label": "Nicht-kritische Systeme zuerst migrieren" },
+              { "label": "Test- und Entwicklungsumgebungen" },
+              { "label": "Quick Wins demonstrieren" }
+            ]
+          },
+          {
+            "label": "Replatforming Phase (Monate 7-12)",
+            "children": [
+              { "label": "E-Commerce auf Cloud-native Dienste" },
+              { "label": "Datenbank-Migration zu managed Services" },
+              { "label": "Backup und Disaster Recovery" }
+            ]
+          },
+          {
+            "label": "Refactoring Phase (Monate 13-18)",
+            "children": [
+              { "label": "ERP-System modernisieren" },
+              { "label": "Microservices-Architektur einführen" },
+              { "label": "DevOps-Praktiken etablieren" }
+            ]
+          },
+          {
+            "label": "Kostenoptimierung",
+            "children": [
+              { "label": "Reserved Instances für Grundlast" },
+              { "label": "Auto-Scaling für variable Lasten" },
+              { "label": "Spot Instances für Batch-Jobs" }
+            ]
+          }
+        ],
+        "explanation": "Die vorgeschlagene Strategie folgt einem gestuften Ansatz, der Quick Wins mit langfristiger Transformation kombiniert. Die Lift & Shift Phase minimiert das Risiko und zeigt schnelle Erfolge. Die schrittweise Modernisierung ermöglicht es dem Team, Cloud-Kompetenzen aufzubauen. Die Kostenoptimierung sollte von Anfang an mitgedacht werden.",
+        "pitfalls": [
+          "Unterschätzung des Schulungsbedarfs für IT-Mitarbeiter",
+          "Fehlende Berücksichtigung von Netzwerklatenz zwischen Cloud und Filialen",
+          "Keine klare Exit-Strategie oder Multi-Cloud-Ansatz",
+          "Vernachlässigung der Datenmigration-Komplexität",
+          "Unzureichende Kostenüberwachung führt zu Budget-Überschreitung"
+        ]
+      },
+      "tts": {
+        "languageCode": "de-DE"
+      },
+      "difficulty": "Medium",
+      "estimatedSolveMinutes": 25
+    }
+  ]
+}

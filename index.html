@@ -1,0 +1,99 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IT Consulting Case Trainer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <h1>IT Consulting Case Trainer</h1>
+            <div class="header-controls">
+                <button id="importBtn" class="btn btn-primary">
+                    <input type="file" id="fileInput" accept=".json" style="display: none;">
+                    Importieren
+                </button>
+                <select id="caseSelector" class="case-selector" aria-label="Case auswählen">
+                    <option value="">-- Case wählen --</option>
+                </select>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <div id="welcomeView" class="welcome-view">
+                <h2>Willkommen</h2>
+                <p>Bitte importieren Sie eine Case-Datei oder wählen Sie einen verfügbaren Case aus.</p>
+            </div>
+
+            <div id="caseView" class="case-view" style="display: none;">
+                <div class="case-header">
+                    <h2 id="caseTitle" class="case-title"></h2>
+                    <div class="case-meta">
+                        <span class="client-badge">
+                            <strong>Klient:</strong> <span id="caseClient"></span>
+                        </span>
+                        <span class="difficulty-badge" id="caseDifficulty"></span>
+                    </div>
+                </div>
+
+                <div class="scenario-section">
+                    <h3>Szenario</h3>
+                    <p id="caseScenario" class="scenario-text"></p>
+                    <p id="caseInstructions" class="instructions-text"></p>
+                    <button id="ttsBtn" class="btn btn-secondary">
+                        <span class="tts-icon">🔊</span>
+                        <span id="ttsBtnText">Vorlesen</span>
+                    </button>
+                </div>
+
+                <div class="action-buttons">
+                    <button id="clarifyingBtn" class="btn btn-primary">Klärende Fragen</button>
+                    <button id="skipBtn" class="btn btn-secondary">Case überspringen</button>
+                </div>
+
+                <div id="clarifyingSection" class="clarifying-section" style="display: none;">
+                    <h3>Klärende Fragen</h3>
+                    <p class="clarifying-hint">Wählen Sie bis zu 2 Fragen aus:</p>
+                    <div id="questionsList" class="questions-list"></div>
+                </div>
+
+                <div id="timerSection" class="timer-section" style="display: none;">
+                    <div class="timer-display">
+                        <span id="timerDisplay">00:00</span>
+                        <button id="pauseBtn" class="btn btn-small">Pause</button>
+                    </div>
+                </div>
+
+                <div id="solutionSection" class="solution-section" style="display: none;">
+                    <h3>Lösung</h3>
+                    <div class="solution-tree">
+                        <h4>Lösungsbaum</h4>
+                        <div id="solutionTree"></div>
+                    </div>
+                    <div class="solution-explanation">
+                        <h4>Erläuterung</h4>
+                        <p id="solutionExplanation"></p>
+                    </div>
+                    <div class="solution-pitfalls">
+                        <h4>Typische Fallstricke</h4>
+                        <ul id="solutionPitfalls"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <div id="errorContainer" class="error-container" style="display: none;">
+                <h3>Fehler beim Import</h3>
+                <ul id="errorList"></ul>
+            </div>
+        </main>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="utils.js"></script>
+    <script src="tts.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
