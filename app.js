@@ -9,9 +9,12 @@ class CaseTrainerApp {
         this.timerInterval = null;
         this.isPaused = false;
         this.currentClarifyingHint = '';
+        this.ttsProvider = typeof window !== 'undefined' ? window.tts : null;
+        this.handleTTSEnd = this.onTTSEnd.bind(this);
         
         this.initElements();
         this.initEventListeners();
+        this.setupTTS();
         this.loadCasesFromStorage();
     }
 
@@ -28,6 +31,7 @@ class CaseTrainerApp {
             caseTitle: document.getElementById('caseTitle'),
             caseScenario: document.getElementById('caseScenario'),
             caseInstructions: document.getElementById('caseInstructions'),
+            ttsToggleBtn: document.getElementById('ttsToggleBtn'),
             
             clarifyingBtn: document.getElementById('clarifyingBtn'),
             skipBtn: document.getElementById('skipBtn'),
@@ -76,6 +80,12 @@ class CaseTrainerApp {
         this.elements.pauseBtn.addEventListener('click', () => {
             this.toggleTimer();
         });
+
+        if (this.elements.ttsToggleBtn) {
+            this.elements.ttsToggleBtn.addEventListener('click', () => {
+                this.handleTTSToggle();
+            });
+        }
     }
 
     async handleFileImport(file) {
@@ -157,6 +167,11 @@ class CaseTrainerApp {
     }
 
     resetState() {
+        if (this.ttsProvider && typeof this.ttsProvider.cancel === 'function') {
+            this.ttsProvider.cancel({ emitEnd: false });
+        }
+        this.setTTSButtonState(false);
+        
         this.selectedQuestions.clear();
         this.stopTimer();
         this.timerSeconds = 0;
@@ -169,6 +184,7 @@ class CaseTrainerApp {
         this.elements.clarifyingBtn.textContent = 'Klärende Fragen';
         this.elements.pauseBtn.textContent = 'Pause';
         this.elements.timerDisplay.textContent = '00:00';
+        this.updateTTSAvailability();
     }
 
     handleClarifyingButton() {
@@ -500,6 +516,176 @@ class CaseTrainerApp {
         if (this.cases[nextIndex]) {
             this.loadCase(this.cases[nextIndex]);
         }
+    }
+
+    setupTTS() {
+        this.ttsProvider = typeof window !== 'undefined' ? window.tts : null;
+        this.updateTTSAvailability();
+
+        if (typeof window !== 'undefined') {
+            window.addEventListener('azure-tts-ready', (event) => {
+                this.ttsProvider = typeof window !== 'undefined' ? window.tts : null;
+                const reason = event && event.detail ? event.detail.reason : undefined;
+                this.updateTTSAvailability(reason);
+            });
+        }
+    }
+
+    updateTTSAvailability(reasonCode) {
+        const button = this.elements.ttsToggleBtn;
+        if (!button) {
+            return;
+        }
+
+        const available = this.isTTSEnabled();
+        button.disabled = !available;
+
+        if (available) {
+            button.title = '';
+            if (this.ttsProvider && typeof this.ttsProvider.onEnd === 'function') {
+                this.ttsProvider.onEnd(this.handleTTSEnd);
+            }
+        } else {
+            button.title = this.getTTSUnavailableMessage(reasonCode);
+        }
+
+        this.setTTSButtonState(false);
+    }
+
+    isTTSEnabled() {
+        return !!(
+            this.ttsProvider &&
+            typeof this.ttsProvider.speak === 'function' &&
+            (!this.ttsProvider.isAvailable || this.ttsProvider.isAvailable())
+        );
+    }
+
+    handleTTSToggle() {
+        if (!this.currentCase) {
+            return;
+        }
+
+        if (!this.isTTSEnabled()) {
+            this.updateTTSAvailability();
+            return;
+        }
+
+        if (this.ttsProvider && typeof this.ttsProvider.isSpeaking === 'function' && this.ttsProvider.isSpeaking()) {
+            if (typeof this.ttsProvider.cancel === 'function') {
+                this.ttsProvider.cancel();
+            }
+            return;
+        }
+
+        const text = this.composeSpeechText(this.currentCase);
+        if (!text) {
+            this.setTTSButtonState(false);
+            return;
+        }
+
+        this.setTTSButtonState(true);
+
+        const languageCode = this.getCaseLanguageCode(this.currentCase);
+        const voiceName = this.getVoiceForLanguage(languageCode);
+
+        this.ttsProvider.speak(text, { languageCode, voiceName }).catch(error => {
+            console.error('Sprachausgabe fehlgeschlagen:', error);
+            this.setTTSButtonState(false);
+        });
+    }
+
+    composeSpeechText(caseObj) {
+        if (!caseObj) {
+            return '';
+        }
+
+        const blocks = [];
+        if (caseObj.scenario) {
+            blocks.push(caseObj.scenario);
+        }
+        if (caseObj.instructions) {
+            blocks.push(`${caseObj.instructions}`);
+        }
+        return blocks.join('\n\n');
+    }
+
+    getCaseLanguageCode(caseObj) {
+        const fallback = APP_CONFIG.tts.azure.defaultLanguage || 'de-DE';
+        if (!caseObj || !caseObj.language) {
+            return fallback;
+        }
+
+        const language = caseObj.language;
+        if (language.includes('-')) {
+            return language;
+        }
+
+        switch (language) {
+            case 'de':
+                return 'de-DE';
+            case 'en':
+                return 'en-US';
+            default:
+                return `${language}-${language.toUpperCase()}`;
+        }
+    }
+
+    getVoiceForLanguage(languageCode) {
+        const voices = APP_CONFIG.tts.azure.voiceByLanguage || {};
+        if (voices[languageCode]) {
+            return voices[languageCode];
+        }
+
+        const short = languageCode && languageCode.slice(0, 2);
+        if (short && voices[short]) {
+            return voices[short];
+        }
+
+        return APP_CONFIG.tts.azure.defaultVoiceName;
+    }
+
+    setTTSButtonState(isSpeaking) {
+        const button = this.elements.ttsToggleBtn;
+        if (!button) {
+            return;
+        }
+
+        if (isSpeaking) {
+            button.textContent = 'Stop';
+            button.classList.add('is-speaking');
+            button.setAttribute('aria-pressed', 'true');
+            button.setAttribute('aria-label', 'Stop');
+        } else {
+            button.textContent = 'Play';
+            button.classList.remove('is-speaking');
+            button.setAttribute('aria-pressed', 'false');
+            button.setAttribute('aria-label', 'Play');
+        }
+    }
+
+    getTTSUnavailableMessage(code) {
+        if (this.ttsProvider && typeof this.ttsProvider.getReason === 'function') {
+            const providerReason = this.ttsProvider.getReason();
+            if (providerReason) {
+                return providerReason;
+            }
+        }
+
+        switch (code) {
+            case 'sdk-load-failed':
+            case 'sdk-missing':
+                return 'Die Azure Speech SDK konnte nicht geladen werden.';
+            case 'config-missing':
+                return 'Bitte hinterlegen Sie gültige Azure-Anmeldedaten für die Sprachausgabe.';
+            case 'init-error':
+                return 'Die Sprachausgabe konnte nicht initialisiert werden.';
+            default:
+                return 'Text-to-Speech derzeit nicht verfügbar.';
+        }
+    }
+
+    onTTSEnd() {
+        this.setTTSButtonState(false);
     }
 
     showErrors(errors) {

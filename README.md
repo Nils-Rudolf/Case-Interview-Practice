@@ -16,6 +16,7 @@ Eine minimalistische Single-Page Web-App zum Üben von IT-Consulting Cases.
 
 1. `index.html` in einem Browser öffnen
 2. Beispiel-Case aus `cases.example.de.json` importieren
+3. Azure-Anmeldedaten werden in `env.js` hinterlegt.
 
 ## Verwendung
 
@@ -24,27 +25,12 @@ Eine minimalistische Single-Page Web-App zum Üben von IT-Consulting Cases.
 2. JSON-Datei auswählen
 3. Bei Validierungsfehlern werden diese angezeigt
 
-## Technische Details
-
-- Vanilla JavaScript (kein Framework)
-- localStorage für persistente Case-Speicherung
-- Web Speech API für TTS
-- Responsive Design (optimiert für Laptop-Bildschirme)
-- ARIA-Labels für Barrierefreiheit
-
-## Browser-Kompatibilität
-
-- Chrome/Edge: Vollständig unterstützt
-- Firefox: TTS eingeschränkt
-- Safari: TTS-Unterstützung variiert
-
 ## Schema-Anforderungen
 
 Cases müssen dem definierten JSON-Schema entsprechen:
 - Genau 4 klärende Fragen
 - Maximal 2 Fragen auswählbar
-- Sprache: Deutsch (de)
-- TTS: de-DE
+- Sprache: Deutsch (`de`) oder Englisch (`en`)
 - Hierarchischer Lösungsbaum (3-6 Hauptpunkte)
 
 ## Konfiguration
@@ -52,3 +38,4 @@ Cases müssen dem definierten JSON-Schema entsprechen:
 In `config.js` können folgende Einstellungen angepasst werden:
 - `skipBehavior`: 'next' oder 'random'
 - TTS-Parameter (Rate, Pitch, Volume)
+
