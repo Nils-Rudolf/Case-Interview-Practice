@@ -1,7 +1,5 @@
 # Interview Case Structuring Practice
 
-Web-App zum Üben der Strukturierung von Consulting Interview Cases mit eigenen Cases und Text-to-Speech-Funktion
-
 ## Features
 
 - Import von Case-Dateien im JSON-Format
