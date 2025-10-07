@@ -3,6 +3,7 @@
     {
       "id": "cloud-migration-retail",
       "title": "Cloud-Migration für Einzelhandelskette",
+      "language": "de",
       "scenario": "Die ModeTrend GmbH, eine mittelständische Einzelhandelskette mit 50 Filialen in Deutschland, möchte ihre komplette IT-Infrastruktur in die Cloud migrieren. Aktuell betreibt das Unternehmen ein eigenes Rechenzentrum mit veralteter Hardware. Die Geschäftsführung erhofft sich Kosteneinsparungen und bessere Skalierbarkeit. Das IT-Budget beträgt 2 Millionen Euro jährlich, wovon 60% für den Betrieb des Rechenzentrums aufgewendet werden.",
       "instructions": "Entwickeln Sie eine Cloud-Migrationsstrategie für ModeTrend.",
       "clarifying": {
