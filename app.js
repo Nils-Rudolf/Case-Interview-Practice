@@ -22,6 +22,7 @@ class CaseTrainerApp {
         this.elements = {
             fileInput: document.getElementById('fileInput'),
             importBtn: document.getElementById('importBtn'),
+            clearCacheBtn: document.getElementById('clearCacheBtn'),
             caseSelector: document.getElementById('caseSelector'),
             welcomeView: document.getElementById('welcomeView'),
             caseView: document.getElementById('caseView'),
@@ -57,6 +58,10 @@ class CaseTrainerApp {
 
         this.elements.fileInput.addEventListener('change', (e) => {
             this.handleFileImport(e.target.files[0]);
+        });
+
+        this.elements.clearCacheBtn.addEventListener('click', () => {
+            this.handleClearCache();
         });
 
         this.elements.caseSelector.addEventListener('change', (e) => {
@@ -100,6 +105,9 @@ class CaseTrainerApp {
             const result = validator.validate(text);
 
             if (result.valid) {
+                // Alte Daten aus dem Cache löschen
+                this.clearAllCachedData();
+                
                 this.cases = result.data.cases;
                 localStorage.setItem(APP_CONFIG.storageKeys.cases, JSON.stringify(result.data));
                 this.updateCaseSelector();
@@ -701,5 +709,31 @@ class CaseTrainerApp {
 
     hideError() {
         this.elements.errorContainer.style.display = 'none';
+    }
+
+    clearAllCachedData() {
+        // Alle gespeicherten Cases und den aktuellen Case-Index löschen
+        localStorage.removeItem(APP_CONFIG.storageKeys.cases);
+        localStorage.removeItem(APP_CONFIG.storageKeys.currentCaseId);
+        
+        // State zurücksetzen
+        this.cases = [];
+        this.currentCase = null;
+        this.currentCaseIndex = 0;
+        this.updateCaseSelector();
+        
+        console.log('Alle gecachten Daten wurden gelöscht');
+    }
+
+    handleClearCache() {
+        if (confirm('Möchten Sie wirklich alle gespeicherten Daten löschen?')) {
+            this.clearAllCachedData();
+            
+            // Zur Willkommensansicht zurückkehren
+            this.elements.caseView.style.display = 'none';
+            this.elements.welcomeView.style.display = 'block';
+            
+            alert('Cache wurde erfolgreich geleert');
+        }
     }
 }
