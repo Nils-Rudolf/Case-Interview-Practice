@@ -415,6 +415,14 @@ body {
     color: var(--text-secondary);
 }
 
+.solution-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    margin-top: 0.5rem;
+}
+
 .solution-tree {
     margin-bottom: 2rem;
 }

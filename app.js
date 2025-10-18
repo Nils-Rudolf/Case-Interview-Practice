@@ -45,6 +45,7 @@ class CaseTrainerApp {
             pauseBtn: document.getElementById('pauseBtn'),
             
             solutionSection: document.getElementById('solutionSection'),
+            solutionTitle: document.getElementById('solutionTitle'),
             solutionTree: document.getElementById('solutionTree'),
             solutionExplanation: document.getElementById('solutionExplanation'),
             solutionPitfalls: document.getElementById('solutionPitfalls')
@@ -501,6 +502,15 @@ class CaseTrainerApp {
         this.elements.solutionSection.style.display = 'block';
         
         const solution = this.currentCase.solution;
+        
+        // Show solution title if provided
+        if (solution.solutionTitle) {
+            this.elements.solutionTitle.textContent = solution.solutionTitle;
+            this.elements.solutionTitle.style.display = 'block';
+        } else {
+            this.elements.solutionTitle.style.display = 'none';
+        }
+        
         this.elements.solutionTree.innerHTML = createTreeHTML(solution.tree);
         this.elements.solutionExplanation.textContent = solution.explanation;
         

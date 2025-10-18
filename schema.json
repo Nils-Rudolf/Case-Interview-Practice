@@ -48,6 +48,7 @@
             "additionalProperties": false,
             "required": ["tree", "explanation", "pitfalls"],
             "properties": {
+              "solutionTitle": { "type": "string", "minLength": 3, "maxLength": 80 },
               "tree": {
                 "type": "array",
                 "minItems": 3,
